@@ -17,23 +17,23 @@ var (
 	clients sync.Map
 )
 
-type modeType int32
+type ModeType int32
 
 const (
-	ModePatch modeType = 0 //定时批量写入
-	ModeEach  modeType = 1 //逐条写入
-	ModeDebug modeType = 2 //不入库，只校验数据
+	ModePatch ModeType = 0 //定时批量写入
+	ModeEach  ModeType = 1 //逐条写入
+	ModeDebug ModeType = 2 //不入库，只校验数据
 )
 
 type Option func(*options)
 
 type options struct {
-	mode      modeType //运行
+	mode      ModeType //运行
 	eventCfgs map[EventType]EventConfig
 	userCfgs  map[UserPropertyType]UserPropertyConfig
 }
 
-func WithMode(mode modeType) Option {
+func WithMode(mode ModeType) Option {
 	return func(o *options) {
 		o.mode = mode
 	}
