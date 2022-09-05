@@ -36,19 +36,25 @@ func WithLogger(logger logger.Interface) Option {
 
 func WithMaxConn(maxConn int) Option {
 	return func(o *options) {
-		o.maxConn = maxConn
+		if maxConn > 0 {
+			o.maxConn = maxConn
+		}
 	}
 }
 
 func WithMaxIdleConn(maxIdleConn int) Option {
 	return func(o *options) {
-		o.maxIdleConn = maxIdleConn
+		if maxIdleConn > 0 {
+			o.maxIdleConn = maxIdleConn
+		}
 	}
 }
 
 func WithMaxLifeTime(maxLifeTime time.Duration) Option {
 	return func(o *options) {
-		o.maxLifeTime = maxLifeTime
+		if maxLifeTime > 0 {
+			o.maxLifeTime = maxLifeTime
+		}
 	}
 }
 
