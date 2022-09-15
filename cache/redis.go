@@ -35,7 +35,9 @@ func WithDb(db int) Option {
 
 func WithPoolSize(poolSize int) Option {
 	return func(o *options) {
-		o.poolSize = poolSize
+		if poolSize > 0 {
+			o.poolSize = poolSize
+		}
 	}
 }
 
