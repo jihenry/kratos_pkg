@@ -159,7 +159,9 @@ func (enc *EscapeSeqJSONEncoder) EncodeEntry(entry zapcore.Entry, fields []zapco
 	}
 	newb := buffer.NewPool().Get()
 
-	// then manipulate that output into what you need it to be
-	newb.Write(bytes.Replace(b.Bytes(), []byte("\\n"), []byte("\n"), -1))
+	// format log stdout
+	out := bytes.Replace(b.Bytes(), []byte("\\n"), []byte("\n"), -1)
+	out = bytes.Replace(out, []byte("\\t"), []byte("\t"), -1)
+	newb.Write(out)
 	return newb, nil
 }
