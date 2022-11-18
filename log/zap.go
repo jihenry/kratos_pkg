@@ -1,11 +1,13 @@
 package log
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"go.uber.org/zap"
+	"go.uber.org/zap/buffer"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -79,7 +81,7 @@ func NewZapLogger(opts ...Option) (log.Logger, error) {
 		EncodeName:     zapcore.FullNameEncoder,
 	}
 	options := options{
-		console: true,
+		console: false,
 		level:   "info",
 		encoder: defaultEncoderCfg,
 	}
@@ -100,7 +102,7 @@ func NewZapLogger(opts ...Option) (log.Logger, error) {
 		writerSyncs = append(writerSyncs, zapcore.AddSync(os.Stdout))
 	}
 	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(options.encoder),
+		&EscapeSeqJSONEncoder{Encoder: zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())},
 		zapcore.NewMultiWriteSyncer(writerSyncs...),
 		zap.NewAtomicLevelAt(level))
 	zapOpts := []zap.Option{
@@ -138,4 +140,26 @@ func (w *zapLogWraper) Log(level log.Level, keyvals ...interface{}) error {
 		w.log.Error("", data...)
 	}
 	return nil
+}
+
+type EscapeSeqJSONEncoder struct {
+	zapcore.Encoder
+}
+
+func (enc *EscapeSeqJSONEncoder) Clone() zapcore.Encoder {
+	return enc // TODO: change me
+}
+
+func (enc *EscapeSeqJSONEncoder) EncodeEntry(entry zapcore.Entry, fields []zapcore.Field) (*buffer.Buffer, error) {
+	// call EncodeEntry on the embedded interface to get the
+	// original output
+	b, err := enc.Encoder.EncodeEntry(entry, fields)
+	if err != nil {
+		return nil, err
+	}
+	newb := buffer.NewPool().Get()
+
+	// then manipulate that output into what you need it to be
+	newb.Write(bytes.Replace(b.Bytes(), []byte("\\n"), []byte("\n"), -1))
+	return newb, nil
 }
