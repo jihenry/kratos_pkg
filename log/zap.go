@@ -65,18 +65,19 @@ type zapLogWraper struct {
 
 func NewZapLogger(opts ...Option) (log.Logger, error) {
 	defaultEncoderCfg := zapcore.EncoderConfig{
-		TimeKey:        "time",
-		LevelKey:       "level",
-		NameKey:        "logger",
-		CallerKey:      "caller",
-		MessageKey:     "msg",
-		StacktraceKey:  "stack",
-		EncodeTime:     zapcore.ISO8601TimeEncoder,
-		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    zapcore.CapitalLevelEncoder,
-		EncodeCaller:   zapcore.ShortCallerEncoder,
-		EncodeDuration: zapcore.SecondsDurationEncoder,
-		EncodeName:     zapcore.FullNameEncoder,
+		TimeKey:          "time",
+		LevelKey:         "level",
+		NameKey:          "logger",
+		CallerKey:        "caller",
+		MessageKey:       "msg",
+		StacktraceKey:    "stack",
+		EncodeTime:       zapcore.ISO8601TimeEncoder,
+		LineEnding:       zapcore.DefaultLineEnding,
+		EncodeLevel:      zapcore.CapitalLevelEncoder,
+		EncodeCaller:     zapcore.ShortCallerEncoder,
+		EncodeDuration:   zapcore.SecondsDurationEncoder,
+		EncodeName:       zapcore.FullNameEncoder,
+		ConsoleSeparator: zapcore.DefaultLineEnding,
 	}
 	options := options{
 		console: false,
