@@ -68,5 +68,5 @@ type PhoneWrapper struct {
 
 type PhoneInfo struct {
 	PurePhoneNumber string `json:"purePhoneNumber"`
-	ConntryCode     string `json:"countryCode"`
+	CountryCode     string `json:"countryCode"`
 }
