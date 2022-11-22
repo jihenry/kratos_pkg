@@ -43,3 +43,8 @@ func TestGetNativeSession(t *testing.T) {
 		}
 	}
 }
+
+func TestGetUserPhone(t *testing.T) {
+	phone, _ := GetUserPhone(context.Background(), "wx4e443d9613e66610", "aaaa")
+	fmt.Printf("phone: %+v", phone)
+}
