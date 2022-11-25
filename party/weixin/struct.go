@@ -70,3 +70,8 @@ type PhoneInfo struct {
 	PurePhoneNumber string `json:"purePhoneNumber"`
 	CountryCode     string `json:"countryCode"`
 }
+
+type WXResp struct {
+	ErrCode int32  `json:"errcode"`
+	ErrMsg  string `json:"errmsg"`
+}

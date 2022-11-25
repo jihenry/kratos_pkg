@@ -16,6 +16,29 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 )
 
+func SendWxMessage(ctx context.Context, url string, bytesData []byte) (WXResp, error) {
+	var wXResp struct {
+		ErrCode int32  `json:"errcode"`
+		ErrMsg  string `json:"errmsg"`
+	}
+	req, _ := Http.NewRequest("POST", url, bytes.NewReader(bytesData))
+	req.Header.Set("Content-Type", "application/json")
+	client := &Http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Errorf("err: %v", err)
+		return wXResp, err
+	}
+	defer resp.Body.Close()
+	replyByte, _ := ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(replyByte, &wXResp)
+	if err != nil {
+		return wXResp, err
+	}
+	return wXResp, nil
+}
+
+
 func GetUserPhone(ctx context.Context, appID, code string) (PhoneWrapper, error) {
 	accessToken, err := GetToken(ctx, appID)
 	if err != nil {
