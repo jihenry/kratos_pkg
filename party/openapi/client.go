@@ -49,7 +49,9 @@ func NewOpenApiClient(opts ...OpenApiOption) (OpenApi, error) {
 	for _, opt := range opts {
 		opt(&options)
 	}
-	httpOpts := []http.ClientOption{}
+	httpOpts := []http.ClientOption{
+		http.WithTimeout(0),
+	}
 	if options.serverUrl != "" {
 		httpOpts = append(httpOpts, http.WithEndpoint(options.serverUrl))
 	} else if options.serviceName != "" {

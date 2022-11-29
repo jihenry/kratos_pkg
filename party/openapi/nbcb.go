@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"gitlab.yeahka.com/gaas/pkg/util"
@@ -45,6 +46,7 @@ type nbcbSendRsp struct {
 }
 
 func (c *openApiImpl) NBCBSend(ctx context.Context, reqPath string, reqParam interface{}, rspData interface{}) error {
+	startTime := time.Now()
 	paramJson, err := util.JSON.MarshalToString(reqParam)
 	if err != nil {
 		return err
@@ -75,10 +77,11 @@ func (c *openApiImpl) NBCBSend(ctx context.Context, reqPath string, reqParam int
 		log.Errorf("invoke err:%s", err)
 		return err
 	}
+	costTime := time.Since(startTime).Seconds()
 	if rsp.Data.NbcbSdkError.ErrorCode != "" {
-		log.Errorf("NBCBSend reqPath:%s nbcbSendHeader:%+v NbcbSdkError:%+v", reqPath, rsp.Head, rsp.Data.NbcbSdkError)
+		log.Errorf("NBCBSend reqPath:%s nbcbSendHeader:%+v NbcbSdkError:%+v costTime:%0.3fs", reqPath, rsp.Head, rsp.Data.NbcbSdkError, costTime)
 		return &rsp.Data.NbcbSdkError
 	}
-	log.Infof("NBCBSend reqPath:%s nbcbSendHeader:%+v nbcbSendPathData:%+v", reqPath, rsp.Head, rspData)
+	log.Infof("NBCBSend reqPath:%s nbcbSendHeader:%+v nbcbSendPathData:%+v costTime:%0.3fs", reqPath, rsp.Head, rspData, costTime)
 	return nil
 }
