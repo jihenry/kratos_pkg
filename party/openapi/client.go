@@ -3,6 +3,7 @@ package openapi
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -18,23 +19,38 @@ type options struct {
 	serverUrl   string //服务器host，优先使用host
 	serviceName string //如果使用nacos，则要传递服务名
 	discovery   registry.Discovery
+	timeout     time.Duration
 }
 
 func WithServerUrl(serverUrl string) OpenApiOption {
 	return func(opts *options) {
-		opts.serverUrl = serverUrl
+		if serverUrl != "" {
+			opts.serverUrl = serverUrl
+		}
 	}
 }
 
 func WithServerName(serviceName string) OpenApiOption {
 	return func(opts *options) {
-		opts.serviceName = serviceName
+		if serviceName != "" {
+			opts.serviceName = serviceName
+		}
+	}
+}
+
+func WithTimeout(timeout time.Duration) OpenApiOption {
+	return func(opts *options) {
+		if timeout != 0 {
+			opts.timeout = timeout
+		}
 	}
 }
 
 func WithDiscovery(discovery registry.Discovery) OpenApiOption {
 	return func(opts *options) {
-		opts.discovery = discovery
+		if discovery != nil {
+			opts.discovery = discovery
+		}
 	}
 }
 
@@ -50,7 +66,7 @@ func NewOpenApiClient(opts ...OpenApiOption) (OpenApi, error) {
 		opt(&options)
 	}
 	httpOpts := []http.ClientOption{
-		http.WithTimeout(0),
+		http.WithTimeout(options.timeout),
 	}
 	if options.serverUrl != "" {
 		httpOpts = append(httpOpts, http.WithEndpoint(options.serverUrl))
@@ -58,6 +74,8 @@ func NewOpenApiClient(opts ...OpenApiOption) (OpenApi, error) {
 		endpoint := fmt.Sprintf("discovery:///%s.http", options.serviceName)
 		httpOpts = append(httpOpts, http.WithEndpoint(endpoint))
 		httpOpts = append(httpOpts, http.WithDiscovery(options.discovery))
+	} else {
+		return nil, fmt.Errorf("conf isn't supported")
 	}
 	client, err := http.NewClient(context.Background(), httpOpts...)
 	if err != nil {
