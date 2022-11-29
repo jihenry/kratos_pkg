@@ -30,7 +30,7 @@ func WithServerUrl(serverUrl string) OpenApiOption {
 	}
 }
 
-func WithServerName(serviceName string) OpenApiOption {
+func WithServiceName(serviceName string) OpenApiOption {
 	return func(opts *options) {
 		if serviceName != "" {
 			opts.serviceName = serviceName
