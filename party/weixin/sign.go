@@ -6,7 +6,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	Http "net/http"
+	"net/url"
 	"sort"
 	"strings"
 )
@@ -66,4 +69,45 @@ func toString(value interface{}) (vv string) {
 	}
 	vv = strings.Replace(vv, " ", "", -1)
 	return
+}
+
+// get wxapi http get wrapper, parse to proto message
+func get(URL string, data map[string]interface{}, reply interface{}) error {
+	req, _ := Http.NewRequest("GET", URL, nil)
+
+	params := url.Values{}
+	for k, v := range data {
+		// v should be either int or string, this is safe
+		params.Add(k, fmt.Sprintf("%v", v))
+	}
+	req.URL.RawQuery = params.Encode()
+
+	client := &Http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	jsonStr, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	log.Println("URL:", URL, "data:", data, "reply:", string(jsonStr))
+
+	err = json.Unmarshal(jsonStr, reply)
+	if err != nil {
+		log.Println("URL:", URL, "data:", data, "reply:", string(jsonStr), "byte:", jsonStr)
+		return err
+	}
+	log.Println("URL:", URL, "request:", data, "reply:", string(jsonStr), "reply proto:", reply)
+
+	// TODO more elegantly check.
+	wxErr := &WXErr{}
+	json.Unmarshal(jsonStr, wxErr)
+	if wxErr.Errcode != 0 {
+		return fmt.Errorf("%s", wxErr.Errmsg)
+	}
+
+	return nil
 }
