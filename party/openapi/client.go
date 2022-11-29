@@ -71,7 +71,7 @@ func NewOpenApiClient(opts ...OpenApiOption) (OpenApi, error) {
 	if options.serverUrl != "" {
 		httpOpts = append(httpOpts, http.WithEndpoint(options.serverUrl))
 	} else if options.serviceName != "" {
-		endpoint := fmt.Sprintf("discovery:///%s.http", options.serviceName)
+		endpoint := fmt.Sprintf("discovery:///%s", options.serviceName)
 		httpOpts = append(httpOpts, http.WithEndpoint(endpoint))
 		httpOpts = append(httpOpts, http.WithDiscovery(options.discovery))
 	} else {
