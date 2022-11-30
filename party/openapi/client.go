@@ -67,7 +67,7 @@ func NewOpenApiClient(opts ...OpenApiOption) (OpenApi, error) {
 	}
 	httpOpts := []http.ClientOption{
 		http.WithTimeout(options.timeout),
-		http.WithBlock(),
+		// http.WithBlock(),
 	}
 	if options.serverUrl != "" {
 		httpOpts = append(httpOpts, http.WithEndpoint(options.serverUrl))
