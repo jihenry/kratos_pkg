@@ -68,6 +68,7 @@ func (c *cosApiImpl) GetTempSecret(ctx context.Context, region, bucket, path str
 	if len(sfs) < 2 {
 		return nil, fmt.Errorf("bucket:%s is invalid", bucket)
 	}
+	appid := sfs[len(sfs)-1]
 	opt := &sts.CredentialOptions{
 		DurationSeconds: int64(time.Hour.Seconds()),
 		Region:          region,
@@ -80,7 +81,7 @@ func (c *cosApiImpl) GetTempSecret(ctx context.Context, region, bucket, path str
 					},
 					Effect: "allow",
 					Resource: []string{
-						"qcs::cos:ap-guangzhou:uid/" + sfs[len(sfs)-1] + ":" + bucket + path,
+						fmt.Sprintf("qcs::cos:%s:uid/%s:%s%s", region, appid, bucket, path),
 					},
 				},
 			},
