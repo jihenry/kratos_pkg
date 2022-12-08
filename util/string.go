@@ -1,6 +1,9 @@
 package util
 
-import "math/rand"
+import (
+	"math/rand"
+	"regexp"
+)
 
 func RandString(n int) string {
 	byteArr := make([]byte, n)
@@ -9,4 +12,10 @@ func RandString(n int) string {
 		byteArr[i] = byte(str)
 	}
 	return string(byteArr)
+}
+
+func IsMobile(phone string) bool {
+	regRuler := "^1[345789]{1}\\d{9}$"
+	reg := regexp.MustCompile(regRuler)
+	return reg.MatchString(phone)
 }
