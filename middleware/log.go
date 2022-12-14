@@ -9,6 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
+	"gitlab.yeahka.com/gaas/pkg/util"
 )
 
 type LoggerOption func(*loggerOption)
@@ -73,8 +74,9 @@ func ServerLogger(logger log.Logger, options ...LoggerOption) middleware.Middlew
 				"stack", stack,
 				"latency", time.Since(startTime).Seconds(),
 			}
-			if opt.reply {
-				kv = append(kv, "reply", reply)
+			if err == nil && opt.reply {
+				mo, _ := util.JSON.Marshal(reply)
+				kv = append(kv, "reply", mo)
 			}
 			_ = log.WithContext(ctx, logger).Log(level, kv...)
 			return
