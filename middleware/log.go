@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/errors"
@@ -76,7 +77,7 @@ func ServerLogger(logger log.Logger, options ...LoggerOption) middleware.Middlew
 			}
 			if err == nil && opt.reply {
 				mo, _ := util.JSON.MarshalToString(reply)
-				kv = append(kv, "reply", mo)
+				kv = append(kv, "reply", url.QueryEscape(mo))
 			}
 			_ = log.WithContext(ctx, logger).Log(level, kv...)
 			return
