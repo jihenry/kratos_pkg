@@ -11,8 +11,15 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 )
 
-type LoggerOption struct {
-	AddReply bool
+type LoggerOption func(*loggerOption)
+type loggerOption struct {
+	reply bool
+}
+
+func WithReply(reply bool) LoggerOption {
+	return func(opt *loggerOption) {
+		opt.reply = reply
+	}
 }
 
 // extractArgs returns the string of the req
@@ -32,7 +39,11 @@ func extractError(err error) (log.Level, string) {
 }
 
 // Server is an server logging middleware.
-func ServerLogger(logger log.Logger, option LoggerOption) middleware.Middleware {
+func ServerLogger(logger log.Logger, options ...LoggerOption) middleware.Middleware {
+	opt := loggerOption{}
+	for _, option := range options {
+		option(&opt)
+	}
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			var (
@@ -62,7 +73,7 @@ func ServerLogger(logger log.Logger, option LoggerOption) middleware.Middleware 
 				"stack", stack,
 				"latency", time.Since(startTime).Seconds(),
 			}
-			if option.AddReply {
+			if opt.reply {
 				kv = append(kv, "reply", reply)
 			}
 			_ = log.WithContext(ctx, logger).Log(level, kv...)
