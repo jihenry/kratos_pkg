@@ -75,7 +75,7 @@ func ServerLogger(logger log.Logger, options ...LoggerOption) middleware.Middlew
 				"latency", time.Since(startTime).Seconds(),
 			}
 			if err == nil && opt.reply {
-				mo, _ := util.JSON.Marshal(reply)
+				mo, _ := util.JSON.MarshalToString(reply)
 				kv = append(kv, "reply", mo)
 			}
 			_ = log.WithContext(ctx, logger).Log(level, kv...)
