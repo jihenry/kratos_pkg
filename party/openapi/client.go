@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/http"
 )
@@ -69,6 +70,7 @@ func NewOpenApiClient(opts ...OpenApiOption) (OpenApi, error) {
 		http.WithTimeout(options.timeout),
 		// http.WithBlock(),
 	}
+	log.Infof("NewOpenApiClient options:%+v", options)
 	if options.serverUrl != "" {
 		httpOpts = append(httpOpts, http.WithEndpoint(options.serverUrl))
 	} else if options.serviceName != "" {
