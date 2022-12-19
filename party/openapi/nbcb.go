@@ -72,7 +72,7 @@ func (c *openApiImpl) NBCBSend(ctx context.Context, reqPath string, reqParam int
 		},
 	}
 	err = c.client.Invoke(context.Background(), "GET",
-		"/nbopen/send?"+strings.Join(params, "&"), nil, &rsp)
+		"/gaas-wx-service/nbopen/send?"+strings.Join(params, "&"), nil, &rsp)
 	if err != nil {
 		log.Errorf("invoke err:%s", err)
 		return err
