@@ -62,7 +62,7 @@ func (c *openApiImpl) NBCBSend(ctx context.Context, reqPath string, reqParam int
 	}
 	params := make([]string, 0, len(req))
 	for k, v := range req {
-		params = append(params, fmt.Sprintf("%s=%s", k, url.QueryEscape(v)))
+		params = append(params, fmt.Sprintf("%s=%s", k, url.PathEscape(v)))
 	}
 	rsp := nbcbSendRsp{
 		Data: nbcbSdkData{

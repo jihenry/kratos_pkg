@@ -6,7 +6,7 @@ import (
 )
 
 func TestNBCBSend(t *testing.T) {
-	client, err := NewOpenApiClient(WithServerUrl("http://10.30.20.207:8083"))
+	client, err := NewOpenApiClient(WithServerUrl("https://t-wxservice.yeahkagame.com"))
 	if err != nil {
 		t.Errorf("NewOpenApiClient err:%s", err)
 		return
@@ -15,8 +15,8 @@ func TestNBCBSend(t *testing.T) {
 		UnionId string `json:"unionId"`
 		Phone   int64  `json:"phone"`
 	}{
-		UnionId: "11",
-		Phone:   15818799620,
+		UnionId: "oAW4Rs7BSrnHzQtXMr5oob0U13_k",
+		Phone:   18844475022,
 	}
 	rspData := struct {
 		Promoter   bool `json:"promoter"`
