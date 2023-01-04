@@ -21,6 +21,7 @@ type options struct {
 	serviceName string //如果使用nacos，则要传递服务名
 	discovery   registry.Discovery
 	timeout     time.Duration
+	block       bool
 }
 
 func WithServerUrl(serverUrl string) OpenApiOption {
@@ -28,6 +29,12 @@ func WithServerUrl(serverUrl string) OpenApiOption {
 		if serverUrl != "" {
 			opts.serverUrl = serverUrl
 		}
+	}
+}
+
+func WithBlock(block bool) OpenApiOption {
+	return func(opts *options) {
+		opts.block = block
 	}
 }
 
@@ -68,7 +75,9 @@ func NewOpenApiClient(opts ...OpenApiOption) (OpenApi, error) {
 	}
 	httpOpts := []http.ClientOption{
 		http.WithTimeout(options.timeout),
-		// http.WithBlock(),
+	}
+	if options.block {
+		httpOpts = append(httpOpts, http.WithBlock())
 	}
 	log.Infof("NewOpenApiClient options:%+v", options)
 	if options.serverUrl != "" {
