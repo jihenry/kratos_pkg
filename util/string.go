@@ -15,7 +15,7 @@ func RandString(n int) string {
 }
 
 func IsMobile(phone string) bool {
-	regRuler := "^1[345789]{1}\\d{9}$"
+	regRuler := "^1[0-9]{1}\\d{9}$"
 	reg := regexp.MustCompile(regRuler)
 	return reg.MatchString(phone)
 }
