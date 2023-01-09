@@ -82,7 +82,12 @@ func NewThinkingDataClient(url, appid string, opts ...Option) (Report, error) {
 	case ModeDebug: //不入库，只校验数据
 		consumer, err = thinkingdata.NewDebugConsumerWithWriter(url, appid, false)
 	default: //定期定量批量上传
-		consumer, err = thinkingdata.NewBatchConsumer(url, appid)
+		consumer, err = thinkingdata.NewBatchConsumerWithConfig(thinkingdata.BatchConfig{
+			ServerUrl: url,
+			AppId:     appid,
+			BatchSize: 10,
+			AutoFlush: true,
+		})
 	}
 	if err != nil {
 		return nil, err

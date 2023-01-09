@@ -3,7 +3,7 @@ module gitlab.yeahka.com/gaas/pkg
 go 1.16
 
 require (
-	github.com/ThinkingDataAnalytics/go-sdk v1.6.3
+	github.com/ThinkingDataAnalytics/go-sdk v1.6.7
 	github.com/creachadair/cityhash v0.1.1
 	github.com/go-kratos/kratos/contrib/registry/nacos/v2 v2.0.0-20220307052055-79057d4326a6
 	github.com/go-kratos/kratos/v2 v2.2.1
