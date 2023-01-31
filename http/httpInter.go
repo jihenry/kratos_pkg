@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"go.uber.org/zap"
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 type HttpInter interface {
@@ -14,7 +14,7 @@ type HttpInter interface {
 	SetBody(interface{}) HttpInter
 	SetHeader(map[string]string) HttpInter
 	SetTimeOut(int64) HttpInter
-	Send(context.Context, *zap.SugaredLogger) ([]byte, error)
+	Send(context.Context, log.Logger) ([]byte, error)
 }
 
 var (
@@ -50,7 +50,7 @@ func (b *baseHttp) SetTimeOut(timeOut int64) HttpInter {
 	return b
 }
 
-func (b *baseHttp) Send(ctx context.Context, logger *zap.SugaredLogger) ([]byte, error) {
+func (b *baseHttp) Send(ctx context.Context, logger log.Logger) ([]byte, error) {
 	defer b.reset()
 	if b.method == "" {
 		b.method = http.MethodPost

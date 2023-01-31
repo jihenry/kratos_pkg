@@ -3,16 +3,17 @@ package http
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
-	"go.uber.org/zap"
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 // HandleFunc
-type HandleFunc func(context.Context, *zap.SugaredLogger, int64, string, string, interface{}, interface{}, map[string]string) ([]byte, error)
+type HandleFunc func(context.Context, log.Logger, int64, string, string, interface{}, interface{}, map[string]string) ([]byte, error)
 
 type baseHttp struct {
 	url         string
@@ -32,7 +33,7 @@ func NewHttp() HttpInter {
 	return &baseHttp{
 		headers: make(map[string]string),
 		timeOut: 0,
-		HandleFunc: func(ctx context.Context, logger *zap.SugaredLogger, timeOut int64, method string, url string, queryArgs interface{}, requestData interface{}, headers map[string]string) ([]byte, error) {
+		HandleFunc: func(ctx context.Context, logger log.Logger, timeOut int64, method string, url string, queryArgs interface{}, requestData interface{}, headers map[string]string) ([]byte, error) {
 			var (
 				err error
 				req *http.Request
@@ -70,18 +71,18 @@ func NewHttp() HttpInter {
 			}
 			httpTime := time.Now()
 			//发起请求的时间
-			logger.Infof("[Http] startTime:%d", httpTime.Unix())
+			logger.Log(log.LevelInfo, log.DefaultMessageKey, fmt.Sprintf("[Http] startTime:%d", httpTime.Unix()))
 			res, err := httpClient.Do(req)
 			if err != nil {
-				logger.Errorf("[Http] request %+v error:%+v", *req, err)
+				logger.Log(log.LevelError, log.DefaultMessageKey, fmt.Sprintf("[Http] request %+v error:%+v", *req, err))
 				return nil, err
 			}
 			latency := time.Now().Sub(httpTime).Seconds()
-			logger.Infof("[Http] latency time consuming:%v", latency)
+			logger.Log(log.LevelInfo, log.DefaultMessageKey, fmt.Sprintf("[Http] latency time consuming:%v", latency))
 			defer res.Body.Close()
 			b, err := ioutil.ReadAll(res.Body)
 			if err != nil {
-				logger.Errorf("[Http] read body fail err:%v", err)
+				logger.Log(log.LevelError, log.DefaultMessageKey, fmt.Sprintf("[Http] read body fail err:%v", err))
 				return nil, err
 			}
 			return b, nil
