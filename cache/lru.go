@@ -1,4 +1,4 @@
-package lrucache
+package cache
 
 import (
 	"errors"

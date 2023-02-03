@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"gitlab.yeahka.com/gaas/pkg/zaplog"
+	klog "github.com/go-kratos/kratos/v2/log"
+	"gitlab.yeahka.com/gaas/pkg/log"
 
 	jsoniter "github.com/json-iterator/go"
-
 )
 
 func TestMain(m *testing.M) {
@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 		WithMaxIdleConnsPerHost(20),
 		WithMaxIdleConns(20),
 	)
-	zaplog.InitZapLogger(zaplog.ZapLoggerConf{
+	log.InitZapLogger(log.ZapLoggerConf{
 		Level:       "info",
 		FileName:    "test",
 		FilePath:    "./http",
@@ -44,8 +44,7 @@ func TestBaseHttp_Send(t *testing.T) {
 		},
 	})
 	ctx := context.Background()
-	logger := zaplog.FromLoggerContext(ctx)
 	data, err := NewHttp().SetURL("https://d2-gmapi.yeahkagame.com/gaas/user/login").
-		SetMethod("POST").SetBody(data).Send(ctx, logger)
+		SetMethod("POST").SetBody(data).Send(ctx, klog.GetLogger())
 	t.Log("data", string(data), "err", err)
 }

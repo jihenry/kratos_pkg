@@ -4,7 +4,7 @@ import (
 	"context"
 	"runtime/debug"
 
-	"gitlab.yeahka.com/gaas/pkg/zaplog"
+	zaplog "gitlab.yeahka.com/gaas/pkg/log"
 )
 
 func Go(c context.Context, f func(context.Context)) {

@@ -21,7 +21,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
-	"gitlab.yeahka.com/gaas/pkg/zaplog"
+	zaplog "gitlab.yeahka.com/gaas/pkg/log"
 )
 
 type (

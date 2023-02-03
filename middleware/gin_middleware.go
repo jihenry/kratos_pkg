@@ -9,7 +9,7 @@ import (
 
 	"gitlab.yeahka.com/gaas/pkg/util"
 
-	"gitlab.yeahka.com/gaas/pkg/zaplog"
+	"gitlab.yeahka.com/gaas/pkg/log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +22,7 @@ func Recovery() gin.HandlerFunc {
 				buf := make([]byte, 64<<10)
 				n := runtime.Stack(buf, false)
 				buf = buf[:n]
-				zaplog.FromContext(c).Errorf("%v: %+v\n%s\n", err, string(data), buf)
+				log.FromContext(c).Errorf("%v: %+v\n%s\n", err, string(data), buf)
 				c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(data))
 				c.AbortWithStatus(200)
 				c.AbortWithStatusJSON(http.StatusOK, gin.H{
@@ -48,8 +48,8 @@ func RequestContext() gin.HandlerFunc {
 				util.RequestData{"requestId": requestId},
 			),
 		)
-		c.Request = c.Request.WithContext(zaplog.NewLoggerContext(c.Request.Context(),
-			zaplog.LoggerWith(zaplog.FromContext(ctx), []interface{}{
+		c.Request = c.Request.WithContext(log.NewLoggerContext(c.Request.Context(),
+			log.LoggerWith(log.FromContext(ctx), []interface{}{
 				RequestID, requestId,
 			}...)))
 		c.Next()
@@ -91,7 +91,7 @@ func Logger(debug bool, maxByte int, serverName string) gin.HandlerFunc {
 		start := time.Now()
 		data, err := c.GetRawData()
 		if err != nil {
-			zaplog.FromContext(c).Infof("Logger.GetRawData err:%v", err)
+			log.FromContext(c).Infof("Logger.GetRawData err:%v", err)
 		}
 		rw := &responseWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 		c.Writer = rw
@@ -110,7 +110,7 @@ func Logger(debug bool, maxByte int, serverName string) gin.HandlerFunc {
 		if debug || len(rw.body.Bytes()) <= maxByte {
 			respBody = rw.body.String()
 		}
-		zaplog.FromContext(c.Request.Context()).Infof("[%s] ip:%s | method:%s | uri:%s | headers:%s | req:%s | status:%d | resp:%s | latency:%f",
+		log.FromContext(c.Request.Context()).Infof("[%s] ip:%s | method:%s | uri:%s | headers:%s | req:%s | status:%d | resp:%s | latency:%f",
 			serverName,
 			c.ClientIP(),
 			c.Request.Method,

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.yeahka.com/gaas/pkg/zaplog"
+	"gitlab.yeahka.com/gaas/pkg/log"
 
 	"github.com/Shopify/sarama"
 	cluster "github.com/bsm/sarama-cluster"
@@ -67,14 +67,14 @@ func receiveMessage(ctx context.Context, kCon *cluster.Consumer, funHandle func(
 			}
 		case err, ok := <-kCon.Errors():
 			if ok {
-				zaplog.Loggers().Infof("consumer error: %v\n", err)
+				log.Loggers().Infof("consumer error: %v\n", err)
 			}
 		case ntf, ok := <-kCon.Notifications():
 			if ok {
-				zaplog.Loggers().Infof("consumer notification: %v\n", ntf)
+				log.Loggers().Infof("consumer notification: %v\n", ntf)
 			}
 		case <-ctx.Done():
-			zaplog.Loggers().Info("receive end signal")
+			log.Loggers().Info("receive end signal")
 			return
 		}
 	}

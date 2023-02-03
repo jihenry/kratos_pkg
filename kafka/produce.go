@@ -3,7 +3,7 @@ package kafka
 import (
 	"context"
 
-	"gitlab.yeahka.com/gaas/pkg/zaplog"
+	"gitlab.yeahka.com/gaas/pkg/log"
 
 	"github.com/Shopify/sarama"
 )
@@ -64,7 +64,7 @@ func InitProduce(kc KafkaConf, funHandle func(anyErr *sarama.ProducerError)) Pro
 // Sync 同步发送消息
 func (p *produceClient) Sync(ctx context.Context, msg *sarama.ProducerMessage) error {
 	partition, offset, err := p.syncProduce.SendMessage(msg)
-	zaplog.FromContext(ctx).Infof("[KafkaSendMessage] partition:%d offset:%d err:%v", partition, offset, err)
+	log.FromContext(ctx).Infof("[KafkaSendMessage] partition:%d offset:%d err:%v", partition, offset, err)
 	return err
 }
 
