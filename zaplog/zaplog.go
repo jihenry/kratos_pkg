@@ -25,14 +25,10 @@ type ZapLoggerConf struct {
 }
 
 func writer(zc ZapLoggerConf) (io.Writer, error) {
-	month := time.Now().Format("200601")
-	filePath := filepath.Join(zc.FilePath, month)
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		os.MkdirAll(filePath, 0755)
-	}
+	_ = os.MkdirAll(zc.FilePath, 0755)
 	return rlog.New(
-		filePath+"/"+zc.FileName+".%Y%m%d.log",
-		rlog.WithLinkName(zc.FilePath+zc.FileName+".log"),
+		filepath.Join(zc.FilePath, zc.FileName+".%Y%m%d.log"),
+		rlog.WithLinkName(filepath.Join(zc.FilePath, zc.FileName+".log")),
 		rlog.WithMaxAge(time.Hour*24*time.Duration(zc.MaxAge)),
 		rlog.WithRotationTime(time.Hour*24),
 	)
