@@ -13,6 +13,9 @@ require (
 	github.com/lestrrat-go/strftime v1.0.6 // indirect
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nacos-group/nacos-sdk-go v1.0.9
+	go.opentelemetry.io/otel v1.10.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.10.0
+	go.opentelemetry.io/otel/exporters/jaeger v1.10.0
 	go.uber.org/zap v1.21.0
 	google.golang.org/grpc v1.46.0
 	gorm.io/driver/mysql v1.2.3
