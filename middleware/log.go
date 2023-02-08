@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/errors"
@@ -73,6 +74,8 @@ func ServerLogger(logger log.Logger, options ...LoggerOption) middleware.Middlew
 				"reason", reason,
 				"stack", stack,
 				"latency", time.Since(startTime).Seconds(),
+				"trace_id", tracing.TraceID()(ctx),
+				"span_id", tracing.SpanID()(ctx),
 			}
 			if err == nil && opt.reply {
 				mo, _ := util.JSON.MarshalToString(reply)
