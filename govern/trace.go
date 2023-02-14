@@ -1,4 +1,4 @@
-package util
+package govern
 
 import (
 	"go.opentelemetry.io/otel"
@@ -31,8 +31,7 @@ func InitTracerProvider(url string, serviceName string) error {
 	return nil
 }
 
-
-func InitTracerProviderUseAgent(host, port string, serviceName string)error{
+func InitTracerProviderUseAgent(host, port string, serviceName string) error {
 	// 创建 Jaeger exporter
 	exp, err := jaeger.New(jaeger.WithAgentEndpoint(jaeger.WithAgentHost(host), jaeger.WithAgentPort(port)))
 	if err != nil {
