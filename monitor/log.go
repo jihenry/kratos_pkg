@@ -25,7 +25,7 @@ type ZapLogConfig struct {
 var log *zap.SugaredLogger
 
 func initLog(fileName, logFilePath string) {
-	c := ZapLogConfig{FileName: fileName, FilePath: logFilePath, MaxSize: 100, MaxBackups: 30, MaxAge: 30, Compress: true, ShowConsole: true}
+	c := ZapLogConfig{FileName: fileName, FilePath: logFilePath, MaxSize: 100, MaxBackups: 30, MaxAge: 30, Compress: true, ShowConsole: false}
 	log = NewLogger(c)
 }
 
