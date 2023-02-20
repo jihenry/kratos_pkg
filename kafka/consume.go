@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"gitlab.yeahka.com/gaas/pkg/log"
@@ -11,38 +10,57 @@ import (
 	cluster "github.com/bsm/sarama-cluster"
 )
 
-func InitConsumer(ctx context.Context, kc KafkaConf, funHandle func(msg *sarama.ConsumerMessage) error, mode bool) *cluster.Consumer {
+type KafkaOption func(*options)
+type options struct {
+	addrs  []string
+	mode   cluster.ConsumerMode
+	topics []string
+	group  string
+}
+
+type KafkaConsumer interface {
+	Receive(ctx context.Context, funHandle func(pm *sarama.ConsumerMessage) error)
+}
+
+type kafkaConsumerImpl struct {
+	consumer *cluster.Consumer
+}
+
+func WithMode(mode cluster.ConsumerMode) KafkaOption {
+	return func(o *options) {
+		o.mode = mode
+	}
+}
+
+func NewKafkaConsumer(ctx context.Context, addrs []string, topics []string, group string, opts ...KafkaOption) (KafkaConsumer, error) {
 	conf := cluster.NewConfig()
-	//开启错误
 	conf.Consumer.Return.Errors = true
-	//分组通知
 	conf.Group.Return.Notifications = true
 	conf.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRange
 	conf.Consumer.Offsets.CommitInterval = 1 * time.Second
 	conf.Consumer.Offsets.Initial = sarama.OffsetNewest
-	if mode {
-		conf.Group.Mode = cluster.ConsumerModePartitions
+	options := options{
+		mode:   cluster.ConsumerModeMultiplex,
+		addrs:  addrs,
+		topics: topics,
+		group:  group,
 	}
-	var (
-		kafkaConsumer *cluster.Consumer
-		err           error
-	)
-	if kafkaConsumer, err = cluster.NewConsumer(kc.Addr, kc.Group, []string{kc.Topic}, conf); err != nil || kafkaConsumer == nil {
-		if err != nil {
-			panic(err.Error())
-		} else {
-			panic(fmt.Sprintf("consumer is nil kafka info: config:%+v", kc))
-		}
+	for _, opt := range opts {
+		opt(&options)
 	}
-	go receiveMessage(ctx, kafkaConsumer, funHandle)
-
-	return kafkaConsumer
+	consumer, err := cluster.NewConsumer(options.addrs, options.group, options.topics, conf)
+	if err != nil {
+		return nil, err
+	}
+	return &kafkaConsumerImpl{
+		consumer: consumer,
+	}, nil
 }
 
-func receiveMessage(ctx context.Context, kCon *cluster.Consumer, funHandle func(pm *sarama.ConsumerMessage) error) {
+func (c *kafkaConsumerImpl) Receive(ctx context.Context, funHandle func(pm *sarama.ConsumerMessage) error) {
 	for {
 		select {
-		case part, ok := <-kCon.Partitions():
+		case part, ok := <-c.consumer.Partitions():
 			if !ok {
 				return
 			}
@@ -51,25 +69,25 @@ func receiveMessage(ctx context.Context, kCon *cluster.Consumer, funHandle func(
 					if err := funHandle(msg); err != nil {
 						continue
 					} else {
-						kCon.MarkOffset(msg, "")
+						c.consumer.MarkOffset(msg, "")
 					}
 				}
 			}(part)
-		case msg, ok := <-kCon.Messages():
+		case msg, ok := <-c.consumer.Messages():
 			if ok {
 				if err := funHandle(msg); err != nil {
 					continue
 				} else {
-					kCon.MarkOffset(msg, "")
+					c.consumer.MarkOffset(msg, "")
 				}
 			} else {
 				time.Sleep(1 * time.Second)
 			}
-		case err, ok := <-kCon.Errors():
+		case err, ok := <-c.consumer.Errors():
 			if ok {
 				log.Loggers().Infof("consumer error: %v\n", err)
 			}
-		case ntf, ok := <-kCon.Notifications():
+		case ntf, ok := <-c.consumer.Notifications():
 			if ok {
 				log.Loggers().Infof("consumer notification: %v\n", ntf)
 			}
