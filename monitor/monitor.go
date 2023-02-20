@@ -5,14 +5,15 @@ import (
 	"math"
 	"os"
 	"sort"
+	"sync"
 	"time"
 )
 
 var (
 	srvName, srvip string
 	queue          = NewQueue()
-	reqMap         map[string]uint64
-	sumMap         map[string][]uint64
+	reqMap         sync.Map
+	sumMap         sync.Map
 	started        = false
 	logFile        os.File
 )
@@ -142,8 +143,8 @@ func Src(src string, identity string, used uint64, maxSrc uint64) {
 
 // 收集任务
 func collectTask() {
-	reqMap = make(map[string]uint64)
-	sumMap = make(map[string][]uint64)
+	reqMap = sync.Map{}
+	sumMap = sync.Map{}
 	for started {
 		item := queue.Front()
 		if item == nil {
@@ -152,9 +153,20 @@ func collectTask() {
 		}
 		record := (item.Value).(record)
 		if record.vtype == 1 {
-			reqMap[record.key] += record.val
+			value, _ := reqMap.Load(record.key)
+			if value != nil {
+				reqMap.Store(record.key, value.(uint64)+record.val)
+			} else {
+				reqMap.Store(record.key, record.val)
+			}
+
 		} else if record.vtype == 2 {
-			sumMap[record.key] = append(sumMap[record.key], record.val)
+			value, _ := sumMap.Load(record.key)
+			if value != nil {
+				sumMap.Store(record.key, append(value.([]uint64), record.val))
+			} else {
+				sumMap.Store(record.key, []uint64{record.val})
+			}
 		}
 		queue.Remove(item)
 	}
@@ -163,29 +175,37 @@ func collectTask() {
 // 输出任务
 func outputTask(t time.Time) {
 	dstr := t.Format("2006-01-02 15:04:05")
-	if len(reqMap) > 0 {
-		tmpReqMap := reqMap
-		reqMap = make(map[string]uint64)
-		rstr := dstr + "\n"
-		for k, v := range tmpReqMap {
-			rstr += fmt.Sprintf("%v %v\n", v, k)
-		}
+	rstr := dstr + "\n"
+	count := 0
+	reqMap.Range(func(key, value interface{}) bool {
+		rstr += fmt.Sprintf("%v %v\n", value.(uint64), key)
+		count++
+		return true
+	})
+	if count > 0 {
 		log.Info(rstr)
 	}
-	if len(sumMap) > 0 {
-		sstr := dstr + "\n"
-		tmpSumMap := sumMap
-		sumMap = make(map[string][]uint64)
-		for k, v := range tmpSumMap {
-			sstr += fmt.Sprintf("%v "+k+"\n", calcQuantile(v), "P99")
-		}
+	reqMap = sync.Map{}
+
+	sstr := dstr + "\n"
+	count = 0
+	sumMap.Range(func(key, value interface{}) bool {
+		sstr += fmt.Sprintf("%v "+key.(string)+"\n", calcQuantile(value.([]uint64)), "P99")
+		count++
+		return true
+	})
+	if count > 0 {
 		log.Info(sstr)
 	}
+	sumMap = sync.Map{}
 }
 
 // P99中位数计算
 func calcQuantile(darr []uint64) uint64 {
 	arrlen := len(darr)
+	if arrlen == 0 {
+		return 0
+	}
 	if arrlen == 1 {
 		return darr[0]
 	}

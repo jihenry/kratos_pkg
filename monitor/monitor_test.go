@@ -22,5 +22,4 @@ func TestMonitor(t *testing.T) {
 
 	time.Sleep(6 * time.Second)
 	Stop()
-	time.Sleep(30 * time.Second)
 }
