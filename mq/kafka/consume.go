@@ -30,13 +30,13 @@ type kafkaConsumerImpl struct {
 	options  consumerOption
 }
 
-func WithMode(mode cluster.ConsumerMode) KafkaConsumerOption {
+func WithConsumeMode(mode cluster.ConsumerMode) KafkaConsumerOption {
 	return func(o *consumerOption) {
 		o.mode = mode
 	}
 }
 
-func WithName(name string) KafkaConsumerOption {
+func WithConsumeName(name string) KafkaConsumerOption {
 	return func(o *consumerOption) {
 		o.name = name
 	}
