@@ -20,6 +20,7 @@ type options struct {
 
 type KafkaConsumer interface {
 	Receive(ctx context.Context, funHandle func(pm *sarama.ConsumerMessage) error)
+	Stop() error
 }
 
 type kafkaConsumerImpl struct {
@@ -55,6 +56,14 @@ func NewKafkaConsumer(ctx context.Context, addrs []string, topics []string, grou
 	return &kafkaConsumerImpl{
 		consumer: consumer,
 	}, nil
+}
+
+// Stop implements KafkaConsumer
+func (c *kafkaConsumerImpl) Stop() error {
+	if c.consumer != nil {
+		return c.consumer.Close()
+	}
+	return nil
 }
 
 func (c *kafkaConsumerImpl) Receive(ctx context.Context, funHandle func(pm *sarama.ConsumerMessage) error) {
