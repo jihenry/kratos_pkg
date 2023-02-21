@@ -28,6 +28,8 @@ func WithProducerName(name string) KafkaProduceOption {
 	}
 }
 
+var _ KafkaProducer = (*kafkaProducerImpl)(nil)
+
 type kafkaProducerImpl struct {
 	asyncProducer  sarama.AsyncProducer
 	syncProducer   sarama.SyncProducer
@@ -37,9 +39,9 @@ type kafkaProducerImpl struct {
 }
 
 type KafkaProducer interface {
-	SendSyncMsg(ctx context.Context, msg ...*sarama.ProducerMessage) error //同步发送消息
-	SendAsyncMsg(ctx context.Context, msg ...*sarama.ProducerMessage)      //异步发送消息
-	Stop()
+	SendSyncMsg(ctx context.Context, msg ...*sarama.ProducerMessage) error  //同步发送消息
+	SendAsyncMsg(ctx context.Context, msg ...*sarama.ProducerMessage) error //异步发送消息
+	Stop() error
 }
 
 func NewKafkaProducer(addrs []string, opts ...KafkaProduceOption) (KafkaProducer, error) {
@@ -89,14 +91,28 @@ func (p *kafkaProducerImpl) SendSyncMsg(ctx context.Context, msgs ...*sarama.Pro
 	}
 }
 
-func (p *kafkaProducerImpl) SendAsyncMsg(ctx context.Context, msgs ...*sarama.ProducerMessage) {
+func (p *kafkaProducerImpl) SendAsyncMsg(ctx context.Context, msgs ...*sarama.ProducerMessage) error {
 	for _, msg := range msgs {
 		p.asyncProducer.Input() <- msg
 	}
+	return nil
 }
 
-func (p *kafkaProducerImpl) Stop() {
-	p.stopCanlelFunc()
+func (p *kafkaProducerImpl) Stop() error {
+	if p.stopCanlelFunc != nil {
+		p.stopCanlelFunc()
+	}
+	if p.asyncProducer != nil {
+		if err := p.asyncProducer.Close(); err != nil {
+			return err
+		}
+	}
+	if p.syncProducer != nil {
+		if err := p.syncProducer.Close(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (p *kafkaProducerImpl) receiveAsyncMsg(stopCtx context.Context) {
