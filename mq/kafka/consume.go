@@ -42,7 +42,7 @@ func WithConsumeName(name string) KafkaConsumerOption {
 	}
 }
 
-func NewKafkaConsumer(ctx context.Context, addrs []string, topics []string, group string, opts ...KafkaConsumerOption) (KafkaConsumer, error) {
+func NewKafkaConsumer(addrs []string, topics []string, group string, opts ...KafkaConsumerOption) (KafkaConsumer, error) {
 	conf := cluster.NewConfig()
 	conf.Consumer.Return.Errors = true
 	conf.Group.Return.Notifications = true
