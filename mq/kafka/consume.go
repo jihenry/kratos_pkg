@@ -2,20 +2,21 @@ package kafka
 
 import (
 	"context"
+	"strings"
 	"time"
-
-	"gitlab.yeahka.com/gaas/pkg/log"
 
 	"github.com/Shopify/sarama"
 	cluster "github.com/bsm/sarama-cluster"
+	"github.com/go-kratos/kratos/v2/log"
 )
 
-type KafkaOption func(*options)
-type options struct {
+type KafkaConsumerOption func(*consumerOption)
+type consumerOption struct {
 	addrs  []string
 	mode   cluster.ConsumerMode
 	topics []string
 	group  string
+	name   string
 }
 
 type KafkaConsumer interface {
@@ -25,27 +26,36 @@ type KafkaConsumer interface {
 
 type kafkaConsumerImpl struct {
 	consumer *cluster.Consumer
+	logger   *log.Helper
+	options  consumerOption
 }
 
-func WithMode(mode cluster.ConsumerMode) KafkaOption {
-	return func(o *options) {
+func WithMode(mode cluster.ConsumerMode) KafkaConsumerOption {
+	return func(o *consumerOption) {
 		o.mode = mode
 	}
 }
 
-func NewKafkaConsumer(ctx context.Context, addrs []string, topics []string, group string, opts ...KafkaOption) (KafkaConsumer, error) {
+func WithName(name string) KafkaConsumerOption {
+	return func(o *consumerOption) {
+		o.name = name
+	}
+}
+
+func NewKafkaConsumer(ctx context.Context, addrs []string, topics []string, group string, opts ...KafkaConsumerOption) (KafkaConsumer, error) {
 	conf := cluster.NewConfig()
 	conf.Consumer.Return.Errors = true
 	conf.Group.Return.Notifications = true
 	conf.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRange
 	conf.Consumer.Offsets.CommitInterval = 1 * time.Second
 	conf.Consumer.Offsets.Initial = sarama.OffsetNewest
-	options := options{
+	options := consumerOption{
 		mode:   cluster.ConsumerModeMultiplex,
 		addrs:  addrs,
 		topics: topics,
 		group:  group,
 	}
+	options.name = strings.Join(topics, ",") + ":" + group
 	for _, opt := range opts {
 		opt(&options)
 	}
@@ -55,10 +65,11 @@ func NewKafkaConsumer(ctx context.Context, addrs []string, topics []string, grou
 	}
 	return &kafkaConsumerImpl{
 		consumer: consumer,
+		options:  options,
+		logger:   log.NewHelper(log.GetLogger(), log.WithMessageKey(options.name)),
 	}, nil
 }
 
-// Stop implements KafkaConsumer
 func (c *kafkaConsumerImpl) Stop() error {
 	if c.consumer != nil {
 		return c.consumer.Close()
@@ -73,15 +84,13 @@ func (c *kafkaConsumerImpl) Receive(ctx context.Context, funHandle func(pm *sara
 			if !ok {
 				return
 			}
-			go func(pc cluster.PartitionConsumer) {
-				for msg := range pc.Messages() {
-					if err := funHandle(msg); err != nil {
-						continue
-					} else {
-						c.consumer.MarkOffset(msg, "")
-					}
+			for msg := range part.Messages() {
+				if err := funHandle(msg); err != nil {
+					continue
+				} else {
+					c.consumer.MarkOffset(msg, "")
 				}
-			}(part)
+			}
 		case msg, ok := <-c.consumer.Messages():
 			if ok {
 				if err := funHandle(msg); err != nil {
@@ -94,14 +103,14 @@ func (c *kafkaConsumerImpl) Receive(ctx context.Context, funHandle func(pm *sara
 			}
 		case err, ok := <-c.consumer.Errors():
 			if ok {
-				log.Loggers().Infof("consumer error: %v\n", err)
+				c.logger.Infof("consumer error: %v\n", err)
 			}
 		case ntf, ok := <-c.consumer.Notifications():
 			if ok {
-				log.Loggers().Infof("consumer notification: %v\n", ntf)
+				c.logger.Infof("consumer notification: %v\n", ntf)
 			}
 		case <-ctx.Done():
-			log.Loggers().Info("receive end signal")
+			c.logger.Info("consumer receive stopped")
 			return
 		}
 	}
