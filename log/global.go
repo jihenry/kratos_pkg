@@ -7,96 +7,102 @@ import (
 )
 
 var (
-	global *klog.Helper
-	lock   sync.Mutex
+	globalLogger klog.Logger
+	globalHelper *klog.Helper
+	lock         sync.Mutex
 )
 
-func SetLogger(logger *klog.Helper) {
+func SetLogger(logger klog.Logger) {
 	lock.Lock()
 	defer lock.Unlock()
-	global = logger
+	globalLogger = logger
+	globalHelper = klog.NewHelper(logger)
 }
 
-func GetLogger() *klog.Helper {
-	return global
+func GetLoggerHelper() *klog.Helper {
+	return globalHelper
+}
+
+func GetLogger() klog.Logger {
+	return globalLogger
 }
 
 // Log Print log by level and keyvals.
 func Log(level klog.Level, keyvals ...interface{}) {
-	global.Log(level, keyvals...)
+	globalHelper.Log(level, keyvals...)
 }
 
 // Debug logs a message at debug level.
 func Debug(a ...interface{}) {
-	global.Debug(a...)
+	globalHelper.Debug(a...)
 }
 
 // Debugf logs a message at debug level.
 func Debugf(format string, a ...interface{}) {
-	global.Debugf(format, a...)
+	globalHelper.Debugf(format, a...)
 }
 
 // Debugw logs a message at debug level.
 func Debugw(keyvals ...interface{}) {
-	global.Debugw(keyvals...)
+	globalHelper.Debugw(keyvals...)
 }
 
 // Info logs a message at info level.
 func Info(a ...interface{}) {
-	global.Info(a...)
+	globalHelper.Info(a...)
 }
 
 // Infof logs a message at info level.
 func Infof(format string, a ...interface{}) {
-	global.Infof(format, a...)
+	globalHelper.Infof(format, a...)
 }
 
 // Infow logs a message at info level.
 func Infow(keyvals ...interface{}) {
-	global.Infow(keyvals...)
+	globalHelper.Infow(keyvals...)
 }
 
 // Warn logs a message at warn level.
 func Warn(a ...interface{}) {
-	global.Warn(a...)
+	globalHelper.Warn(a...)
 }
 
 // Warnf logs a message at warnf level.
 func Warnf(format string, a ...interface{}) {
-	global.Warnf(format, a...)
+	globalHelper.Warnf(format, a...)
 }
 
 // Warnw logs a message at warnf level.
 func Warnw(keyvals ...interface{}) {
-	global.Warnw(keyvals...)
+	globalHelper.Warnw(keyvals...)
 }
 
 // Error logs a message at error level.
 func Error(a ...interface{}) {
-	global.Error(a...)
+	globalHelper.Error(a...)
 }
 
 // Errorf logs a message at error level.
 func Errorf(format string, a ...interface{}) {
-	global.Errorf(format, a...)
+	globalHelper.Errorf(format, a...)
 }
 
 // Errorw logs a message at error level.
 func Errorw(keyvals ...interface{}) {
-	global.Errorw(keyvals...)
+	globalHelper.Errorw(keyvals...)
 }
 
 // Fatal logs a message at fatal level.
 func Fatal(a ...interface{}) {
-	global.Fatal(a...)
+	globalHelper.Fatal(a...)
 }
 
 // Fatalf logs a message at fatal level.
 func Fatalf(format string, a ...interface{}) {
-	global.Fatalf(format, a...)
+	globalHelper.Fatalf(format, a...)
 }
 
 // Fatalw logs a message at fatal level.
 func Fatalw(keyvals ...interface{}) {
-	global.Fatalw(keyvals...)
+	globalHelper.Fatalw(keyvals...)
 }
