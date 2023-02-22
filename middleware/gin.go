@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"time"
 
-	"gitlab.yeahka.com/gaas/pkg/util"
-
+	klog "github.com/go-kratos/kratos/v2/log"
 	"gitlab.yeahka.com/gaas/pkg/log"
+	"gitlab.yeahka.com/gaas/pkg/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,19 +39,10 @@ func Recovery() gin.HandlerFunc {
 
 func RequestContext() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		requestId := UUId()
-		//日志的上下文
-		ctx := c.Request.Context()
-		//设置用户的请求ID
-		c.Request = c.Request.WithContext(
-			util.NewRequestContext(ctx,
-				util.RequestData{"requestId": requestId},
-			),
-		)
-		c.Request = c.Request.WithContext(log.NewLoggerContext(c.Request.Context(),
-			log.LoggerWith(log.FromContext(ctx), []interface{}{
-				RequestID, requestId,
-			}...)))
+		requestId := util.New()
+		requestDataCtx := NewRequestDataContext(c.Request.Context(), &RequestData{RequestId: requestId})
+		loggerCtx := log.NewContext(requestDataCtx, klog.With(klog.GetLogger(), RequestID, requestId))
+		c.Request = c.Request.WithContext(loggerCtx)
 		c.Next()
 	}
 }
