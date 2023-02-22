@@ -106,3 +106,7 @@ func Fatalf(format string, a ...interface{}) {
 func Fatalw(keyvals ...interface{}) {
 	globalHelper.Fatalw(keyvals...)
 }
+
+func With(l klog.Logger, kv ...interface{}) klog.Logger {
+	return klog.With(l, kv...)
+}
