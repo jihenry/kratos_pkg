@@ -14,10 +14,15 @@ func NewContext(ctx context.Context, logger log.Logger) context.Context {
 }
 
 func FromContext(ctx context.Context) *log.Helper {
+	logger := FromLogger(ctx)
+	return log.NewHelper(logger)
+}
+
+func FromLogger(ctx context.Context) log.Logger {
 	logger := log.GetLogger()
 	if ctxLogger, ok := ctx.Value(loggerContextKey{}).(log.Logger); ok {
 		logger = ctxLogger
 	}
 	ctxValueLogger := log.WithContext(ctx, logger)
-	return log.NewHelper(ctxValueLogger)
+	return ctxValueLogger
 }
