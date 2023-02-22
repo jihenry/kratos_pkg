@@ -107,13 +107,13 @@ func (m *middle) RPCLogging(template string) middleware.Middleware {
 func (m *middle) RequestContext() middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
-			requestId := GetMetaData(ctx, RequestID)[RequestID] //从上游获取到请求的 X-Request-Id]
+			requestId := GetMetaData(ctx, RequestKeyXRequestID)[RequestKeyXRequestID] //从上游获取到请求的 X-Request-Id]
 			if requestId == "" {
 				requestId = util.New()
 			}
 			requestDataCtx := NewRequestDataContext(ctx, &RequestData{RequestId: requestId})
 			loggerCtx := log.NewContext(requestDataCtx, klog.With(klog.GetLogger(),
-				RequestID, requestId, XTraceID, tracing.TraceID(), XSpanId, tracing.SpanID()))
+				RequestKeyXRequestID, requestId, RequestKeyXTraceID, tracing.TraceID(), RequestKeyXSpanId, tracing.SpanID()))
 			return handler(loggerCtx, req)
 		}
 	}

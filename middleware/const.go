@@ -1,7 +1,7 @@
 package middleware
 
 const (
-	RequestID = `X-Request-Id`
-	XTraceID  = `X-Trace-Id`
-	XSpanId   = `X-Span-Id`
+	RequestKeyXRequestID = `X-Request-Id`
+	RequestKeyXTraceID   = `X-Trace-Id`
+	RequestKeyXSpanId    = `X-Span-Id`
 )

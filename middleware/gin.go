@@ -41,7 +41,7 @@ func RequestContext() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestId := util.New()
 		requestDataCtx := NewRequestDataContext(c.Request.Context(), &RequestData{RequestId: requestId})
-		loggerCtx := log.NewContext(requestDataCtx, klog.With(klog.GetLogger(), RequestID, requestId))
+		loggerCtx := log.NewContext(requestDataCtx, klog.With(klog.GetLogger(), RequestKeyXRequestID, requestId))
 		c.Request = c.Request.WithContext(loggerCtx)
 		c.Next()
 	}
