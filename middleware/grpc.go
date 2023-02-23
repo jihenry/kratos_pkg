@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"runtime"
-	"strings"
 	"time"
 
 	"gitlab.yeahka.com/gaas/pkg/util"
@@ -14,8 +13,6 @@ import (
 	"github.com/go-kratos/kratos/v2/errors"
 
 	"github.com/go-kratos/kratos/v2/transport"
-
-	"github.com/go-kratos/kratos/v2/metadata"
 
 	klog "github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
@@ -117,55 +114,6 @@ func (m *middle) RequestContext() middleware.Middleware {
 			return handler(loggerCtx, req)
 		}
 	}
-}
-
-// SetMetaData 设置请求的RPC请求的上下文传递参数
-func SetMetaData(ctx context.Context, metaData map[string]string) context.Context {
-	var (
-		globalKey = `x-md-global-`
-	)
-	for k := range metaData {
-		var (
-			extra string
-		)
-		if md, ok := metadata.FromServerContext(ctx); ok {
-			extra = md.Get(globalKey + k)
-		}
-		if extra == "" {
-			if val, ok := metaData[k]; ok {
-				extra = val
-			}
-		}
-		ctx = metadata.AppendToClientContext(ctx, globalKey+k, extra)
-	}
-	return ctx
-}
-
-func GetMetaData(ctx context.Context, key ...string) map[string]string {
-	var (
-		globalKey = `x-md-global-`
-		ans       = make(map[string]string)
-	)
-	var (
-		extra string
-	)
-	for k := range key {
-		val := key[k]
-		if tr, ok := transport.FromServerContext(ctx); ok {
-			extra = tr.RequestHeader().Get(globalKey + strings.ToLower(val))
-		}
-		if tr, ok := transport.FromClientContext(ctx); ok {
-			extra = tr.ReplyHeader().Get(globalKey + strings.ToLower(val))
-		}
-		if md, ok := metadata.FromServerContext(ctx); ok {
-			extra = md.Get(globalKey + val)
-		}
-		if md, ok := metadata.FromClientContext(ctx); ok {
-			extra = md.Get(globalKey + val)
-		}
-		ans[val] = extra
-	}
-	return ans
 }
 
 func (m *middle) extractArgs(req interface{}) string {
