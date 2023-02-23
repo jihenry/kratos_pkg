@@ -1,4 +1,4 @@
-package util
+package cache
 
 import (
 	"context"
@@ -42,7 +42,7 @@ func NewRedisLock(store *redis.Client, key string) *RedisLock {
 	return &RedisLock{
 		store: store,
 		key:   key,
-		id:    RandString(randomLen),
+		id:    Randn(randomLen),
 	}
 }
 
@@ -82,4 +82,29 @@ func (rl *RedisLock) Release(ctx context.Context) (bool, error) {
 // SetExpire 设置过期时间
 func (rl *RedisLock) SetExpire(seconds int) {
 	atomic.StoreUint32(&rl.seconds, uint32(seconds))
+}
+
+const (
+	letterBytes    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	letterIdxBits  = 6
+	defaultRandLen = 8
+	letterIdxMask  = 1<<letterIdxBits - 1
+	letterIdxMax   = 63 / letterIdxBits
+)
+
+func Randn(n int) string {
+	b := make([]byte, n)
+	for i, cache, remain := n-1, rand.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = rand.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+
+	return string(b)
 }
