@@ -36,7 +36,7 @@ func NewNacosConfig(dataId, groupId string, opts ...ConfigOption) (config.Config
 		opt(&option)
 	}
 	key := dataId + ":" + groupId
-	if configIns, ok := configMap.Load(fmt.Sprintf("%s:%s", dataId, groupId)); ok {
+	if configIns, ok := configMap.Load(key); ok {
 		if ins, ok := configIns.(config.Config); ok {
 			return ins, nil
 		}
@@ -48,5 +48,34 @@ func NewNacosConfig(dataId, groupId string, opts ...ConfigOption) (config.Config
 		return nil, err
 	}
 	configMap.Store(key, cfgIns)
+	return cfgIns, nil
+}
+
+type DataGroup struct {
+	DataID  string
+	GroupID string
+}
+
+func NewNacosConfig2(datags []DataGroup, opts ...ConfigOption) (config.Config, error) {
+	if len(datags) == 0 {
+		return nil, fmt.Errorf("datag can't empty")
+	}
+	option := configOpt{
+		nacosClient: pvNacosConfigClient,
+	}
+	for _, opt := range opts {
+		opt(&option)
+	}
+	sources := make([]config.Source, 0, len(datags))
+	for _, datag := range datags {
+		sources = append(sources,
+			nacos.NewConfigSource(option.nacosClient, nacos.WithDataID(datag.DataID), nacos.WithGroup(datag.GroupID)))
+	}
+	cfgIns := config.New(
+		config.WithSource(sources...),
+	)
+	if err := cfgIns.Load(); err != nil {
+		return nil, err
+	}
 	return cfgIns, nil
 }
