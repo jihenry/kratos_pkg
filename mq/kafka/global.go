@@ -24,14 +24,14 @@ func GetGlobalProdcuer() KafkaProducer {
 }
 
 func SendSyncMsg(ctx context.Context, msgs ...*sarama.ProducerMessage) error {
-	if pvProducer != nil {
+	if pvProducer == nil {
 		return fmt.Errorf("global kafka producer is nil")
 	}
 	return pvProducer.SendSyncMsg(ctx, msgs...)
 }
 
 func SendAsyncMsg(ctx context.Context, msgs ...*sarama.ProducerMessage) error {
-	if pvProducer != nil {
+	if pvProducer == nil {
 		return fmt.Errorf("global kafka producer is nil")
 	}
 	return pvProducer.SendAsyncMsg(ctx, msgs...)
