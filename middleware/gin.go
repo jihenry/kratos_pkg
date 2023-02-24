@@ -37,7 +37,7 @@ func Recovery() gin.HandlerFunc {
 	}
 }
 
-func RequestContext() gin.HandlerFunc {
+func Request() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestId := util.New()
 		requestDataCtx := NewRequestDataContext(c.Request.Context(), &RequestData{RequestId: requestId})

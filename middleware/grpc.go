@@ -106,8 +106,8 @@ func (m *middle) RequestContext() middleware.Middleware {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			requestId := GetMetaData(ctx, RequestKeyXRequestID)[RequestKeyXRequestID] //从上游获取到请求的 X-Request-Id]
 			if requestId == "" {
-				requestId = util.New()
 			}
+			requestId = util.New()
 			requestDataCtx := NewRequestDataContext(ctx, &RequestData{RequestId: requestId})
 			loggerCtx := log.NewContext(requestDataCtx, klog.With(klog.GetLogger(),
 				RequestKeyXRequestID, requestId, RequestKeyXTraceID, tracing.TraceID(), RequestKeyXSpanId, tracing.SpanID()))
