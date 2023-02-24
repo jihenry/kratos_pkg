@@ -108,10 +108,10 @@ func (c *kafkaConsumerImpl) Receive(ctx context.Context, funHandle func(pm *sara
 			if ok {
 				c.logger.Infof("kafka consumer error: %v\n", err)
 			}
-		case ntf, ok := <-c.consumer.Notifications():
-			if ok {
-				c.logger.Debugf("kafka consumer notification: %v\n", ntf)
-			}
+		// case ntf, ok := <-c.consumer.Notifications():
+		// 	if ok {
+		// 		c.logger.Debugf("kafka consumer notification: %v\n", ntf)
+		// 	}
 		case <-ctx.Done():
 			c.logger.Info("kafka consumer receive stopped")
 			return
