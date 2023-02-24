@@ -116,6 +116,7 @@ func (p *kafkaProducerImpl) Stop() error {
 }
 
 func (p *kafkaProducerImpl) receiveAsyncMsg(stopCtx context.Context) {
+	p.logger.Infof("kafka producer receiveAsyncMsg started")
 	for {
 		select {
 		case succMsg, ok := <-p.asyncProducer.Successes():
@@ -127,17 +128,17 @@ func (p *kafkaProducerImpl) receiveAsyncMsg(stopCtx context.Context) {
 					Err: nil,
 				})
 			} else {
-				p.logger.Debugf("receiveAsyncMsg success msg:%+v", succMsg)
+				p.logger.Debugf("kafka producer receiveAsyncMsg success topic:%s key:%s", succMsg.Topic, succMsg.Key)
 			}
 		case errMsg, ok := <-p.asyncProducer.Errors():
-			p.logger.Debugf("receiveAsyncMsg err msg:%s", errMsg.Err)
+			p.logger.Debugf("kafka producer receiveAsyncMsg err msg:%s", errMsg.Err)
 			if !ok {
 				time.Sleep(1 * time.Second)
 			} else if p.options.asyncMsgResultFunc != nil {
 				p.options.asyncMsgResultFunc(errMsg)
 			}
 		case <-stopCtx.Done():
-			p.logger.Infof("receiveAsyncMsg stopped.")
+			p.logger.Infof("kafka producer receiveAsyncMsg stopped")
 			return
 		}
 	}

@@ -78,19 +78,22 @@ func (c *kafkaConsumerImpl) Stop() error {
 }
 
 func (c *kafkaConsumerImpl) Receive(ctx context.Context, funHandle func(pm *sarama.ConsumerMessage) error) {
+	c.logger.Info("kafka consumer receive started")
 	for {
 		select {
 		case part, ok := <-c.consumer.Partitions():
 			if !ok {
 				return
 			}
-			for msg := range part.Messages() {
-				if err := funHandle(msg); err != nil {
-					continue
-				} else {
-					c.consumer.MarkOffset(msg, "")
+			go func() {
+				for msg := range part.Messages() {
+					if err := funHandle(msg); err != nil {
+						continue
+					} else {
+						c.consumer.MarkOffset(msg, "")
+					}
 				}
-			}
+			}()
 		case msg, ok := <-c.consumer.Messages():
 			if ok {
 				if err := funHandle(msg); err != nil {
@@ -103,14 +106,14 @@ func (c *kafkaConsumerImpl) Receive(ctx context.Context, funHandle func(pm *sara
 			}
 		case err, ok := <-c.consumer.Errors():
 			if ok {
-				c.logger.Infof("consumer error: %v\n", err)
+				c.logger.Infof("kafka consumer error: %v\n", err)
 			}
 		case ntf, ok := <-c.consumer.Notifications():
 			if ok {
-				c.logger.Infof("consumer notification: %v\n", ntf)
+				c.logger.Debugf("kafka consumer notification: %v\n", ntf)
 			}
 		case <-ctx.Done():
-			c.logger.Info("consumer receive stopped")
+			c.logger.Info("kafka consumer receive stopped")
 			return
 		}
 	}
