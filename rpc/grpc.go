@@ -52,6 +52,15 @@ func WithTimeout(timeout time.Duration) Option {
 	}
 }
 
+func Conn2(name string, opts ...Option) *grpc.ClientConn {
+	conn, err := Conn(name, opts...)
+	if err != nil {
+		log.Errorf("conn name:%s err:%s", name, err)
+		return nil
+	}
+	return conn
+}
+
 func Conn(name string, opts ...Option) (*grpc.ClientConn, error) {
 	conn, ok := conns.Load(name)
 	if ok {
@@ -82,14 +91,13 @@ func doConnect(name string, opts ...Option) (*grpc.ClientConn, error) {
 		transgrpc.WithMiddleware(
 			recovery.Recovery(),
 		),
-		transgrpc.WithDiscovery(options.discovery),
 		transgrpc.WithTimeout(options.timeout),
 	}
 	var endpoint = options.endpoint
-	if options.endpoint != "" {
-		dialOpts = append(dialOpts, transgrpc.WithEndpoint(options.endpoint))
+	if endpoint != "" {
+		dialOpts = append(dialOpts, transgrpc.WithEndpoint(endpoint))
 	} else {
-		endpoint := fmt.Sprintf("discovery:///%s.grpc", name)
+		endpoint = fmt.Sprintf("discovery:///%s.grpc", name)
 		dialOpts = append(dialOpts, transgrpc.WithEndpoint(endpoint))
 		dialOpts = append(dialOpts, transgrpc.WithDiscovery(options.discovery))
 	}

@@ -1,6 +1,9 @@
 package page
 
-import "errors"
+import (
+	"errors"
+	"sync"
+)
 
 type Page struct {
 	PageIndex int `json:"pageIndex" form:"pageIndex"` //页码
@@ -9,11 +12,18 @@ type Page struct {
 }
 
 func New(pageIndex, pageSize int) *Page {
-	return &Page{
-		PageIndex: pageIndex,
-		PageSize:  pageSize,
-		Total:     0,
+	pool := sync.Pool{
+		New: func() interface{} {
+			return &Page{
+				PageIndex: pageIndex,
+				PageSize:  pageSize,
+				Total:     0,
+			}
+		},
 	}
+	obj := pool.Get().(*Page)
+	pool.Put(obj)
+	return obj
 }
 
 // Check 检查 Page 的参数

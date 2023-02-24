@@ -1,16 +1,32 @@
-package registry
+package config
 
 import (
 	"os"
+	"sync"
 
-	"github.com/go-kratos/kratos/contrib/registry/nacos/v2"
 	"github.com/nacos-group/nacos-sdk-go/clients"
+	"github.com/nacos-group/nacos-sdk-go/clients/config_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/common/file"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 )
 
-func NewNacosClient(addr string, port uint64, copts ...constant.ClientOption) (*nacos.Registry, error) {
+var (
+	pvNacosConfigClient config_client.IConfigClient
+	pv                  sync.Mutex
+)
+
+func SetGlobalConfigClient(configClient config_client.IConfigClient) {
+	pv.Lock()
+	pvNacosConfigClient = configClient
+	pv.Unlock()
+}
+
+func GetGlobalConfigClient() config_client.IConfigClient {
+	return pvNacosConfigClient
+}
+
+func NewNacosClient(addr string, port uint64, copts ...constant.ClientOption) (config_client.IConfigClient, error) {
 	sc := []constant.ServerConfig{
 		*constant.NewServerConfig(addr, port),
 	}
@@ -30,11 +46,14 @@ func NewNacosClient(addr string, port uint64, copts ...constant.ClientOption) (*
 	for _, opt := range copts {
 		opt(cc)
 	}
-	client, err := clients.NewNamingClient(
-		vo.NacosClientParam{ClientConfig: cc, ServerConfigs: sc},
+	client, err := clients.NewConfigClient(
+		vo.NacosClientParam{
+			ClientConfig:  cc,
+			ServerConfigs: sc,
+		},
 	)
 	if err != nil {
 		return nil, err
 	}
-	return nacos.New(client), nil
+	return client, nil
 }

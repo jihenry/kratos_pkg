@@ -4,14 +4,14 @@ import (
 	"context"
 	"runtime/debug"
 
-	zaplog "gitlab.yeahka.com/gaas/pkg/log"
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 func Go(c context.Context, f func(context.Context)) {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
-				zaplog.FromContext(c).Errorf("recover:%s %v", err, string(debug.Stack()))
+				log.Errorf("recover:%s %v", err, string(debug.Stack()))
 				return
 			}
 		}()
@@ -24,7 +24,7 @@ func GoWithParam(c context.Context, f func(context.Context, ...interface{}), arg
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
-				zaplog.FromContext(c).Errorf("recover:%s %v", err, string(debug.Stack()))
+				log.Errorf("recover:%s\n%v", err, string(debug.Stack()))
 				return
 			}
 		}()
