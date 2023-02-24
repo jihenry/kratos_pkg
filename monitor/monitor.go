@@ -143,8 +143,6 @@ func Src(src string, identity string, used uint64, maxSrc uint64) {
 
 // 收集任务
 func collectTask() {
-	reqMap = sync.Map{}
-	sumMap = sync.Map{}
 	for started {
 		item := queue.Front()
 		if item == nil {
