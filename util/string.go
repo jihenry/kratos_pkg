@@ -3,6 +3,7 @@ package util
 import (
 	"math/rand"
 	"regexp"
+	"strings"
 )
 
 const (
@@ -43,4 +44,16 @@ func IsMobile(phone string) bool {
 	regRuler := "^1[0-9]{1}\\d{9}$"
 	reg := regexp.MustCompile(regRuler)
 	return reg.MatchString(phone)
+}
+
+func SplitUserAgent(userAgent string) string {
+	agent := strings.Split(userAgent, " ")
+	var agents []string
+	for _, v := range agent {
+		if strings.Contains(v, "Process") {
+			continue
+		}
+		agents = append(agents, v)
+	}
+	return strings.Join(agents, " ")
 }
